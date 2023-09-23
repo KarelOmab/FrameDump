@@ -25,7 +25,7 @@ Example:
 
     python3 framedump.py /path/to/video.mp4 1 /path/to/output 60 png
 
-This will extract frames from `/path/to/video.mp4` every second, resize each frame to a height of 480 pixels (width adjusted to maintain aspect ratio), and generate a sprite-image grid in `png` format inside `/path/to/output`.
+This will extract frames from `/path/to/video.mp4` every second, resize each frame to a height of 60 pixels (width adjusted to maintain aspect ratio), and generate a sprite-image grid in `png` format inside `/path/to/output`.
 
 ## How It Works
 
