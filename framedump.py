@@ -155,6 +155,7 @@ def main():
     except subprocess.CalledProcessError:
         print("Failed to create sprite-image grid. Please ensure ImageMagick is accessible and working.")
 
+    # 4. Cleanup?
     if not KEEP_FRAME_DUMP and os.path.exists(frame_dir):
         try:
             shutil.rmtree(frame_dir)
