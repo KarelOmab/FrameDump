@@ -10,7 +10,7 @@ FFMPEG_FRAME_FORMAT = 'png'
 MAGICK_MAX_ROWS = 60
 MAGICK_MAX_COLS = 60
 MAGICK_OUTPUT_PREFIX = 'sprite_image_grid'
-KEEP_FRAME_DUMP = False
+KEEP_FRAME_DUMP = True
 
 magick_accepted_formats = {'png', 'webp'}
 
@@ -65,14 +65,52 @@ def validate_args(video_source_path, interval, output_dir, frame_height_px, spri
 
     return True
 
+def get_video_fps(video_path):
+    cmd = [
+        'ffprobe', 
+        '-v', 'error',
+        '-select_streams', 'v',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        '-show_entries', 'stream=r_frame_rate',
+        video_path
+    ]
+    fps_str = subprocess.check_output(cmd).decode('utf-8').strip()
+    # If fps is a fraction, calculate it
+    if '/' in fps_str:
+        numerator, denominator = map(int, fps_str.split('/'))
+        fps = numerator / denominator
+    else:
+        fps = float(fps_str)
+    return round(fps)
+
 def extract_frames_using_ffmpeg(data):
+    fps = get_video_fps(data['video_source_path'])
+    
+    cmd = [
+        'ffmpeg', 
+        '-i', data['video_source_path'], 
+        '-vf', f'select=not(mod(n\,{fps})),scale=-1:{data["frame_height_px"]}', 
+        '-vsync', 'vfr',
+        os.path.join(data['output_dir_frames'], f'frame%06d.{FFMPEG_FRAME_FORMAT}')
+    ]
+    subprocess.run(cmd, check=True)
+
+def extract_frames_using_ffmpeg2(data):
     cmd = [
         'ffmpeg', 
         '-i', data['video_source_path'], 
         '-vf', f'fps=1/{data["interval"]},scale=-1:{data["frame_height_px"]}', 
         os.path.join(data['output_dir_frames'], f'frame%06d.{FFMPEG_FRAME_FORMAT}')
     ]
-    
+    subprocess.run(cmd, check=True)
+
+def extract_frames_using_ffmpeg3(data):
+    cmd = [
+        'ffmpeg', 
+        '-i', data['video_source_path'], 
+        '-r', '1', 
+        os.path.join(data['output_dir_frames'], f'frame%06d.{FFMPEG_FRAME_FORMAT}')
+    ]
     subprocess.run(cmd, check=True)
 
 def create_sprite_image_grid(data):
